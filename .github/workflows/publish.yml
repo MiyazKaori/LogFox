@@ -2,9 +2,10 @@ name: Build & Release APK
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*' # 例如 v1.0.0 会触发
+    inputs:
+      release_tag:
+        description: 'Release tag, e.g. 1.0.0'
+        required: true
 
 env:
   KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -47,6 +48,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag: ${{ github.event.inputs.release_tag }}
           files: ${{ env.APK_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
