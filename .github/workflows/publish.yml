@@ -6,6 +6,11 @@ on:
     tags:
       - 'v*' # 例如 v1.0.0 会触发
 
+env:
+  KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+  ALIAS: ${{ secrets.ALIAS }}
+  KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,16 +31,12 @@ jobs:
       # 3. 解码并保存 keystore
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/keystore/main.jks
 
       # 4. 构建 APK
       - name: Build Release APK
         run: |
-          ./gradlew clean assembleRelease \
-            -Pandroid.injected.signing.store.file=app/release.keystore \
-            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+          ./gradlew assembleRelease
 
       # 5. 获取 APK 路径
       - name: Find APK
