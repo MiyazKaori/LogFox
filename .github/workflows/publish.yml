@@ -1,10 +1,9 @@
 name: Build & Release APK
 
 on:
-  workflow_dispatch:
   push:
     tags:
-      - 'v*' # 例如 v1.0.0 会触发
+    - '*'
 
 env:
   KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -14,6 +13,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       # 1. 检出代码
@@ -31,7 +32,7 @@ jobs:
       # 3. 解码并保存 keystore
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/keystore/main.jks
+          mkdir -p app/keystore && echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/keystore/main.jks
 
       # 4. 构建 APK
       - name: Build Release APK
@@ -45,8 +46,8 @@ jobs:
 
       # 6. 发布到 Release
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          files: ${{ env.APK_PATH }}
+          artifacts: ${{ env.APK_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
