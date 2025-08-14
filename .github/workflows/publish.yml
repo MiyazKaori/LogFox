@@ -1,11 +1,9 @@
 name: Build & Release APK
 
 on:
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: 'Release tag, e.g. 1.0.0'
-        required: true
+  push:
+    tags:
+    - '*'
 
 env:
   KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -15,6 +13,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       # 1. 检出代码
@@ -46,9 +46,8 @@ jobs:
 
       # 6. 发布到 Release
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          tag: ${{ github.event.inputs.release_tag }}
-          files: ${{ env.APK_PATH }}
+          artifacts: ${{ env.APK_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
